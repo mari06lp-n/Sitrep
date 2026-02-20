@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SITREP - Aluvión Multitud</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
+
+
+<style>
+body{
+    margin:0;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background:#f4f6f8;
+    color:#333;
+}
+
+/* ===== MEMBRETE ===== */
+.header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    background:#7a1f1f;
+    color:white;
+    padding:15px 25px;
+}
+.header img{ height:70px; }
+.header-info{ text-align:right; }
+.header button{
+    background:white;
+    color:#7a1f1f;
+    border:none;
+    padding:8px 15px;
+    border-radius:6px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+/* ===== SECCIONES ===== */
+section{
+    max-width:1000px;
+    margin:30px auto;
+    background:white;
+    padding:30px;
+    border-radius:8px;
+    box-shadow:0 0 8px rgba(0,0,0,0.08);
+}
+
+h1{
+    text-align:center;
+    color:#7a1f1f;
+}
+
+h2{
+    color:#7a1f1f;
+    border-bottom:2px solid #7a1f1f;
+    padding-bottom:5px;
+}
+
+/* ===== AFECTACIONES ===== */
+.grid-afectaciones{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+    gap:20px;
+    text-align:center;
+}
+.card{
+    border:1px solid #ddd;
+    padding:15px;
+    border-radius:6px;
+}
+.card img{
+    width:50px;
+}
+.card span{
+    font-size:24px;
+    font-weight:bold;
+    color:#7a1f1f;
+}
+
+/* ===== CUADRO TABLA ===== */
+.tabla{
+    border:2px solid #7a1f1f;
+    border-radius:6px;
+    overflow:hidden;
+}
+.fila{
+    display:flex;
+    border-bottom:1px solid #ccc;
+}
+.fila:last-child{border-bottom:none;}
+.col1{
+    width:40%;
+    background:#f9f9f9;
+    padding:10px;
+    font-weight:bold;
+}
+.col2{
+    width:60%;
+    padding:10px;
+}
+
+/* ===== PANEL ===== */
+#panel{
+    position:fixed;
+    top:120px;
+    left:20px;
+    z-index:9999;
+}
+#panel button{
+    display:block;
+    margin:5px 0;
+}
+
+/* ===== IMPRESIÓN ===== */
+@media print{
+    #panel,
+    .header button{
+        display:none !important;
+    }
+
+    .pagina1{ page-break-after:always; }
+    .pagina2{ page-break-after:always; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== MEMBRETE ===== -->
+<div class="header">
+    <img src="logo-itscre.png">
+    <div class="header-info">
+        <h3>Instituto Superior Tecnológico ITSCRE</h3>
+        <p>Gestión de Riesgos y Desastres</p>
+        <p><strong>Materia:</strong> Herramientas de evaluación y reporte de daños</p>
+        <button onclick="window.print()">Descargar / Imprimir PDF</button>
+    </div>
+</div>
+
+<!-- PANEL DESPLEGABLE -->
+<div id="panel" style="position:fixed; top:120px; left:20px; z-index:9999;">
+  <button onclick="togglePanel()" 
+          style="background:#7a1f1f;color:white;border:none;padding:8px 15px;border-radius:6px;">
+    Editar ▼
+  </button>
+
+  <div id="panelOpciones" 
+       style="display:none;background:white;border:2px solid #7a1f1f;
+              padding:10px;border-radius:6px;margin-top:5px;">
+
+   <button onclick="activarEdicion()">Activar edición</button>
+<button onclick="desactivarEdicion()">Guardar</button>
+<hr>
+
+<button onclick="formato('bold')"><b>N</b></button>
+<button onclick="formato('italic')"><i>I</i></button>
+<button onclick="formato('underline')"><u>S</u></button>
+
+<button onclick="formato('justifyLeft')">Izq</button>
+<button onclick="formato('justifyCenter')">Centro</button>
+<button onclick="formato('justifyRight')">Der</button>
+
+<button onclick="cambiarTamano(4)">A+</button>
+<button onclick="cambiarTamano(-4)">A-</button>
+
+<select onchange="cambiarFuente(this.value)">
+  <option value="Arial">Arial</option>
+  <option value="Times New Roman">Times New Roman</option>
+  <option value="Verdana">Verdana</option>
+  <option value="Courier New">Courier</option>
+</select>
+
+<input type="color" onchange="cambiarColor(this.value)">
+
+<hr>
+
+<button onclick="crearTexto()">Nuevo cuadro</button>
+<button onclick="crearGrafico()">Nuevo gráfico</button>
+
+  </div>
+</div>
+<!-- ==================== PAGINA 1 ==================== -->
+<section class="pagina1">
+
+<h1 contenteditable="true">Aluvión Multitud - Alausí</h1>
+<p style="text-align:center;font-weight:bold;" contenteditable="true">
+Nivel de afectación: 3
+</p>
+
+<h2>Mapa de ubicación</h2>
+<img src="MAPA_DE_UBICACION.png" 
+     style="width:45%; display:block; margin:20px auto;">
+<p contenteditable="true" style="margin-top:15px;">
+Ubicación geográfica del área afectada: Quebrada La Palma, parroquia Multitud, cantón Alausí, provincia de Chimborazo.
+</p>
+
+<h2>Afectaciones a la población</h2>
+
+<div class="grid-afectaciones">
+
+<div class="card">
+<img src="imagen-personas-afectadas.png" style="width:60px;">
+<p>Personas afectadas</p>
+<span id="pA" contenteditable="true">200</span>
+</div>
+
+
+<div class="card">
+<img src="imagen-familias-afectadas.png" style="width:60px;">
+<p>Familias afectadas</p>
+<span id="fA" contenteditable="true">55</span>
+</div>
+
+<div class="card">
+<img src="imagen-personas-damnificadas.png" style="width:60px;">
+<p>Personas damnificadas</p>
+<span id="pD" contenteditable="true">26</span>
+</div>
+
+<div class="card">
+<img src="imagen-familias-damnificadas.png" style="width:60px;">
+<p>Familias damnificadas</p>
+<span id="fD" contenteditable="true">10</span>
+</div>
+
+<div class="card">
+<img src="imagen-heridos.png" style="width:60px;">
+<p>Heridos</p>
+<span id="heridos" contenteditable="true">1</span>
+</div>
+
+<div class="card">
+<img src="imagen-desaparecidos.png" style="width:60px;">
+<p>Desaparecidos</p>
+<span id="desaparecidos" contenteditable="true">1</span>
+</div>
+
+
+<canvas id="grafico1" style="max-width:400px;margin:auto;"></canvas>
+</section>
+
+<!-- ==================== PAGINA 2 ==================== -->
+<section class="pagina2">
+
+<h2>Viviendas</h2>
+
+<div class="grid-afectaciones">
+
+<div class="card">
+<img src="Viviendas-afectadas.png">
+<p>Viviendas afectadas</p>
+<span id="vA" contenteditable="true">12</span>
+</div>
+
+<div class="card">
+<img src="Viviendas-Destruidas.png">
+<p>Viviendas destruidas</p>
+<span id="vD" contenteditable="true">6</span>
+</div>
+
+</div>
+
+<canvas id="grafico2" style="max-width:400px;margin:auto;"></canvas>
+
+<h2>Infraestructura y servicios básicos</h2>
+<div class="tabla">
+<div class="fila"><div class="col1">Agua potable</div><div class="col2" contenteditable="true">Abastecimiento mediante tanqueros.</div></div>
+<div class="fila"><div class="col1">Puentes destruidos</div><div class="col2" contenteditable="true">4</div></div>
+<div class="fila"><div class="col1">Energía eléctrica</div><div class="col2" contenteditable="true">Operativa al 98%</div></div>
+</div>
+
+<h2>Asistencia Humanitaria</h2>
+<div class="tabla">
+<div class="fila"><div class="col1">Institución</div><div class="col2" contenteditable="true">Secretaría de Gestión de Riesgos (SNGR)</div></div>
+<div class="fila"><div class="col1">Kit alimentos</div><div class="col2" contenteditable="true">55</div></div>
+<div class="fila"><div class="col1">Kit limpieza</div><div class="col2" contenteditable="true">2</div></div>
+</div>
+
+</section>
+
+<!-- ==================== PAGINA 3 ==================== -->
+<section>
+
+<h2 contenteditable="true">Resumen ejecutivo</h2>
+<p contenteditable="true">
+Debido a las fuertes precipitaciones registradas en la sierra centro del país, se produjeron dos aluviones y un deslizamiento...
+</p>
+
+<h2 contenteditable="true">Detalles del evento</h2>
+<p contenteditable="true">
+Las intensas lluvias ocasionaron el desprendimiento de material desde las laderas...
+</p>
+
+<section class="cierre-academico">
+<h2 style="color:#7a1f1f;">Cierre académico y autoría</h2>
+
+<div style="border:2px solid #7a1f1f;border-radius:8px;overflow:hidden;">
+
+<div style="display:flex;border-bottom:1px solid #ccc;">
+<div style="width:35%;padding:12px;font-weight:bold;background:#f2f2f2;">
+Finalidad del documento
+</div>
+<div style="width:65%;padding:12px;">
+Documento académico elaborado con fines educativos, como ejercicio de análisis, evaluación y reporte de daños ante eventos adversos.
+</div>
+</div>
+
+<div style="display:flex;border-bottom:1px solid #ccc;">
+<div style="width:35%;padding:12px;font-weight:bold;background:#f2f2f2;">Autor</div>
+<div style="width:65%;padding:12px;">Shannon Marie Lasso Paz</div>
+</div>
+
+<div style="display:flex;border-bottom:1px solid #ccc;">
+<div style="width:35%;padding:12px;font-weight:bold;background:#f2f2f2;">Carrera</div>
+<div style="width:65%;padding:12px;">Gestión de Riesgos y Desastres</div>
+</div>
+
+<div style="display:flex;border-bottom:1px solid #ccc;">
+<div style="width:35%;padding:12px;font-weight:bold;background:#f2f2f2;">Materia</div>
+<div style="width:65%;padding:12px;">Herramientas de evaluación y reporte de daños</div>
+</div>
+
+<div style="display:flex;border-bottom:1px solid #ccc;">
+<div style="width:35%;padding:12px;font-weight:bold;background:#f2f2f2;">Docente</div>
+<div style="width:65%;padding:12px;">Walter Galan</div>
+</div>
+
+<div style="display:flex;">
+<div style="width:35%;padding:12px;font-weight:bold;background:#f2f2f2;">Institución</div>
+<div style="width:65%;padding:12px;">Instituto Superior Tecnológico ITSCRE</div>
+</div>
+
+</div>
+</section>
+
+<script>
+let grafico1;
+let grafico2;
+
+window.onload = function(){
+
+  const ctx1 = document.getElementById("grafico1").getContext("2d");
+
+  grafico1 = new Chart(ctx1,{
+    type:"bar",
+    data:{
+      labels:[
+        "Personas afectadas",
+        "Familias afectadas",
+        "Personas damnificadas",
+        "Familias damnificadas",
+        "Heridos",
+        "Desaparecidos"
+      ],
+      datasets:[{
+        data:[],
+        backgroundColor:"#7a1f1f"
+      }]
+    },
+    options:{
+      plugins:{legend:{display:false}}
+    }
+  });
+
+  const ctx2 = document.getElementById("grafico2").getContext("2d");
+
+  grafico2 = new Chart(ctx2,{
+    type:"bar",
+    data:{
+      labels:["Viviendas afectadas","Viviendas destruidas"],
+      datasets:[{
+        data:[],
+        backgroundColor:"#444"
+      }]
+    },
+    options:{
+      plugins:{legend:{display:false}}
+    }
+  });
+
+  actualizarGraficos();
+
+  document.querySelectorAll("#pA,#fA,#pD,#fD,#heridos,#desaparecidos,#vA,#vD")
+  .forEach(el=>{
+    el.addEventListener("input", actualizarGraficos);
+  });
+
+};
+
+function actualizarGraficos(){
+
+  grafico1.data.datasets[0].data = [
+    parseInt(document.getElementById("pA").innerText) || 0,
+    parseInt(document.getElementById("fA").innerText) || 0,
+    parseInt(document.getElementById("pD").innerText) || 0,
+    parseInt(document.getElementById("fD").innerText) || 0,
+    parseInt(document.getElementById("heridos").innerText) || 0,
+    parseInt(document.getElementById("desaparecidos").innerText) || 0
+  ];
+
+  grafico2.data.datasets[0].data = [
+    parseInt(document.getElementById("vA").innerText) || 0,
+    parseInt(document.getElementById("vD").innerText) || 0
+  ];
+
+  grafico1.update();
+  grafico2.update();
+}
+
+ 
+
+/* ===== PANEL FUNCIONES ===== */
+function activarEdicion(){document.body.contentEditable=true;}
+function desactivarEdicion(){document.body.contentEditable=false;}
+
+function crearTexto(){
+
+  let div = document.createElement("div");
+  div.classList.add("movible");
+  div.contentEditable = true;
+  div.innerText = "Nuevo texto...";
+  div.style.position = "absolute";
+  div.style.top = "200px";
+  div.style.left = "200px";
+  div.style.width = "200px";
+  div.style.minHeight = "30px";
+  div.style.minWidth = "80px";
+  div.style.border = "2px solid #7a1f1f";
+  div.style.padding = "10px";
+  div.style.background = "white";
+
+  document.body.appendChild(div);
+
+  agregarBotonEliminar(div);
+
+  activarMovimientoYResize(div);
+}
+
+
+function subirImagen(event){
+let reader=new FileReader();
+reader.onload=function(){
+let img=document.createElement("img");
+img.src=reader.result;
+img.style.width="200px";
+img.style.display="block";
+img.style.margin="10px";
+img.draggable=true;
+document.body.appendChild(img);
+};
+reader.readAsDataURL(event.target.files[0]);
+}
+
+function crearGrafico(){
+
+  let datosTexto = prompt("Escribe los datos separados por coma (ej: 5,10,20)");
+  if(!datosTexto) return;
+
+  let datos = datosTexto.split(",").map(num => parseInt(num.trim()) || 0);
+
+  let etiquetas = [];
+  for(let i=0; i<datos.length; i++){
+    etiquetas.push("Dato " + (i+1));
+  }
+
+  let tipoGrafico = prompt("Tipo de gráfico: bar, line o pie", "bar");
+  if(!tipoGrafico) tipoGrafico = "bar";
+
+  let contenedor = document.createElement("div");
+  contenedor.style.position = "absolute";
+  contenedor.style.top = "250px";
+  contenedor.style.left = "250px";
+  contenedor.style.width = "350px";
+  contenedor.style.height = "350px";
+  contenedor.style.background = "white";
+
+  let canvas = document.createElement("canvas");
+  contenedor.appendChild(canvas);
+
+  document.body.appendChild(contenedor);
+
+  agregarBotonEliminar(contenedor);
+  activarMovimientoYResize(contenedor);
+
+  let miGrafico = new Chart(canvas,{
+    type: tipoGrafico,
+    data:{
+      labels: etiquetas,
+      datasets:[{
+        data: datos,
+        backgroundColor:[
+          "#7a1f1f","#c0392b","#e74c3c",
+          "#8e44ad","#3498db","#16a085",
+          "#f39c12","#2c3e50"
+        ]
+      }]
+    },
+    options:{responsive:true, maintainAspectRatio:false}
+  });
+
+  // 🔥 DOBLE CLICK PARA EDITAR
+  contenedor.ondblclick = function(){
+
+    let nuevosDatos = prompt(
+      "Editar datos separados por coma:",
+      miGrafico.data.datasets[0].data.join(",")
+    );
+
+    if(nuevosDatos){
+      let arreglo = nuevosDatos.split(",").map(num => parseInt(num.trim()) || 0);
+      miGrafico.data.datasets[0].data = arreglo;
+
+      let nuevasEtiquetas = [];
+      for(let i=0; i<arreglo.length; i++){
+        nuevasEtietas.push("Dato " + (i+1));
+      }
+
+      miGrafico.data.labels = nuevasEtiquetas;
+    }
+
+    let nuevoTipo = prompt(
+      "Cambiar tipo (bar, line, pie):",
+      miGrafico.config.type
+    );
+
+    if(nuevoTipo){
+      miGrafico.config.type = nuevoTipo;
+    }
+
+    miGrafico.update();
+  };
+
+}
+
+function togglePanel(){
+  const panel = document.getElementById("panelOpciones");
+  panel.style.display =
+    panel.style.display === "none" ? "block" : "none";
+}
+
+function hacerMovible(elemento){
+
+  let offsetX = 0;
+  let offsetY = 0;
+  let isDown = false;
+
+  elemento.addEventListener("mousedown", function(e){
+    isDown = true;
+    offsetX = e.clientX - elemento.offsetLeft;
+    offsetY = e.clientY - elemento.offsetTop;
+  });
+
+  document.addEventListener("mouseup", function(){
+    isDown = false;
+  });
+
+  document.addEventListener("mousemove", function(e){
+    if(!isDown) return;
+    elemento.style.left = (e.clientX - offsetX) + "px";
+    elemento.style.top = (e.clientY - offsetY) + "px";
+  });
+}
+
+function activarMovimientoYResize(elemento){
+
+  interact(elemento)
+    .draggable({
+      listeners: {
+        move (event) {
+          let x = (parseFloat(elemento.getAttribute('data-x')) || 0) + event.dx
+          let y = (parseFloat(elemento.getAttribute('data-y')) || 0) + event.dy
+
+          elemento.style.transform = `translate(${x}px, ${y}px)`
+          elemento.setAttribute('data-x', x)
+          elemento.setAttribute('data-y', y)
+        }
+      }
+    })
+    .resizable({
+      edges: { left: true, right: true, bottom: true, top: true }
+    })
+    .on('resizemove', function (event) {
+      let { x, y } = event.target.dataset
+
+      x = (parseFloat(x) || 0)
+      y = (parseFloat(y) || 0)
+
+      event.target.style.width = event.rect.width + 'px'
+      event.target.style.height = event.rect.height + 'px'
+
+      x += event.deltaRect.left
+      y += event.deltaRect.top
+
+      event.target.style.transform = `translate(${x}px, ${y}px)`
+
+      event.target.dataset.x = x
+      event.target.dataset.y = y
+    });
+}
+
+function formato(tipo){
+  document.execCommand(tipo, false, null);
+}
+
+function cambiarTamano(valor){
+
+  let seleccion = window.getSelection();
+  if(!seleccion.rangeCount) return;
+
+  let range = seleccion.getRangeAt(0);
+  let parent = range.commonAncestorContainer.parentElement;
+
+  let tamañoActual = window.getComputedStyle(parent).fontSize;
+  tamañoActual = parseInt(tamañoActual);
+
+  let nuevoTamaño = tamañoActual + valor;
+
+  document.execCommand("fontSize", false, "7");
+
+  let fonts = document.getElementsByTagName("font");
+  for(let i = 0; i < fonts.length; i++){
+    if(fonts[i].size == "7"){
+      fonts[i].removeAttribute("size");
+      fonts[i].style.fontSize = nuevoTamaño + "px";
+    }
+  }
+}
+
+
+
+function cambiarFuente(fuente){
+  document.execCommand("fontName", false, fuente);
+}
+
+function cambiarColor(color){
+  document.execCommand("foreColor", false, color);
+}
+
+
+function agregarBotonEliminar(elemento){
+
+  let btn = document.createElement("button");
+  btn.innerText = "✖";
+  btn.style.position = "absolute";
+  btn.style.top = "-10px";
+  btn.style.right = "-10px";
+  btn.style.background = "red";
+  btn.style.color = "white";
+  btn.style.border = "none";
+  btn.style.borderRadius = "50%";
+  btn.style.cursor = "pointer";
+
+  btn.onclick = function(){
+    elemento.remove();
+  };
+
+  elemento.appendChild(btn);
+}
+
+// 🔥 PEGAR IMAGEN DESDE CTRL+V
+document.addEventListener("paste", function(e){
+
+  let items = (e.clipboardData || window.clipboardData).items;
+  if(!items) return;
+
+  for(let i = 0; i < items.length; i++){
+
+    if(items[i].type.indexOf("image") !== -1){
+
+      let archivo = items[i].getAsFile();
+      let reader = new FileReader();
+
+      reader.onload = function(event){
+
+        let contenedor = document.createElement("div");
+        contenedor.style.position = "absolute";
+        contenedor.style.top = "200px";
+        contenedor.style.left = "200px";
+        contenedor.style.width = "300px";
+        contenedor.style.height = "300px";
+        contenedor.style.background = "white";
+
+        let img = document.createElement("img");
+        img.src = event.target.result;
+        img.style.width = "100%";
+        img.style.height = "100%";
+        img.style.objectFit = "contain";
+
+        contenedor.appendChild(img);
+
+        // 🔥 MENÚ VISUAL
+        img.addEventListener("contextmenu", function(ev){
+          ev.preventDefault();
+
+          let viejo = document.getElementById("menuImagen");
+          if(viejo) viejo.remove();
+
+          let menu = document.createElement("div");
+          menu.id = "menuImagen";
+          menu.style.position = "absolute";
+          menu.style.top = (ev.pageY - 10) + "px";
+          menu.style.left = (ev.pageX - 10) + "px";
+          menu.style.background = "white";
+          menu.style.border = "2px solid #7a1f1f";
+          menu.style.padding = "8px";
+          menu.style.borderRadius = "8px";
+          menu.style.boxShadow = "0 5px 15px rgba(0,0,0,0.3)";
+          menu.style.zIndex = "99999";
+          menu.style.display = "flex";
+          menu.style.flexDirection = "column";
+          menu.style.gap = "5px";
+
+          function boton(texto, accion){
+            let b = document.createElement("button");
+            b.innerText = texto;
+            b.onclick = function(){
+              accion();
+              menu.remove();
+            };
+            menu.appendChild(b);
+          }
+
+          boton("Rotar 15°", function(){
+            let actual = img.getAttribute("data-rot") || 0;
+            actual = parseInt(actual) + 15;
+            img.style.transform = "rotate(" + actual + "deg)";
+            img.setAttribute("data-rot", actual);
+          });
+
+          boton("Marco", function(){
+            img.style.border = img.style.border ? "" : "4px solid #7a1f1f";
+          });
+
+          boton("Recortar", function(){
+            img.style.objectFit = "cover";
+          });
+
+          boton("Restaurar", function(){
+            img.style.transform = "";
+            img.style.border = "";
+            img.style.objectFit = "contain";
+          });
+
+          boton("Eliminar", function(){
+            contenedor.remove();
+          });
+
+          document.body.appendChild(menu);
+
+          document.addEventListener("click", function cerrar(){
+            menu.remove();
+            document.removeEventListener("click", cerrar);
+          });
+        });
+
+        document.body.appendChild(contenedor);
+        agregarBotonEliminar(contenedor);
+        activarMovimientoYResize(contenedor);
+
+      };
+
+      reader.readAsDataURL(archivo);
+    }
+  }
+
+});
+
+</script>
+
+
+
+</body>
+</html>
